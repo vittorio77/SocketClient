@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketImpl;
 
 
 /**
@@ -34,11 +35,11 @@ public class SocketMessage {
 
     public String send() throws IOException{
 
-             // crea il socket
-            Log.d(TAG, "Crea il socket");
+             // Crea il socket e connette all'indirizzo dato e alla porta
+            Log.d(TAG, "Connessione al socket");
             Socket socket = new Socket(ip, port);
-            socket.setSoTimeout(5000);
             Log.d(TAG, "New Socket just created");
+
             if (socket.isConnected()) {
 
                 OutputStream outputStream = socket.getOutputStream();
@@ -60,23 +61,22 @@ public class SocketMessage {
                 outToServer.print(message);
                 Log.d(TAG, "Message sent");
 
-                //result = bufferedReaderToString(bufferedReader);
-
                 outToServer.flush();
 
                 result = bufferedReaderToString(bufferedReader);
                 Log.d(TAG, "Risposta del server è:  " + result);
-                //outToServer.flush();
+
                 bufferedReader.close();
                 outToServer.close();
+
                 return result;
             } else{
-                result="socket non connesso";
+                result="Nessuna risposta dal server";
             }
             return result;
     }
 
-    // metodo per convertire un oggetto BufferedReader  in una stringa
+    // Metodo per convertire un oggetto BufferedReader  in una stringa
     private String bufferedReaderToString(BufferedReader br) {
         StringBuilder sb = new StringBuilder();
         String line;

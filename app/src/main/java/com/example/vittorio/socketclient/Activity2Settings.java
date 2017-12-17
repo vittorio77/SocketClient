@@ -8,9 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
 import java.util.ArrayList;
-import java.util.Objects;
 
 
 public class Activity2Settings extends AppCompatActivity {
