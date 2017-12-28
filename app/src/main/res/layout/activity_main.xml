@@ -6,15 +6,28 @@
     android:layout_height="match_parent"
     tools:context="com.example.vittorio.socketclient.MainActivity">
 
+    <Button
+        android:id="@+id/buttonDisconnect"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="DISCONNECT  AND DISABLE"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="@+id/buttonConnect"
+        app:layout_constraintRight_toRightOf="@+id/buttonConnect"
+        app:layout_constraintTop_toBottomOf="@+id/buttonConnect" />
+
     <TextView
         android:id="@+id/textView3"
-        android:layout_width="77dp"
+        android:layout_width="65dp"
         android:layout_height="18dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="48dp"
         android:hint="Ip del server"
         android:text="MESSAGE"
-        android:textAlignment="center"
+        android:textAlignment="textStart"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -22,12 +35,12 @@
         android:id="@+id/textView2"
         android:layout_width="44dp"
         android:layout_height="20dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="15dp"
         android:hint="Ip del server"
         android:text="PORT"
-        android:textAlignment="center"
-        android:layout_marginLeft="8dp"
+        android:textAlignment="viewStart"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="15dp"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <android.support.v7.widget.Toolbar
@@ -50,37 +63,58 @@
 
 
     <TextView
+        android:id="@+id/SSIDTextView"
+        android:layout_width="105dp"
+        android:layout_height="18dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@+id/textView4"
+        app:layout_constraintHorizontal_bias="0.111"
+        app:layout_constraintLeft_toRightOf="@+id/textView4"
+        app:layout_constraintRight_toLeftOf="@+id/responseTextView"
+        app:layout_constraintTop_toTopOf="@+id/textView4"
+        app:layout_constraintVertical_bias="1.0"
+        tools:text="SSID" />
+
+    <TextView
         android:id="@+id/messageTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Message to send"
+        android:layout_width="94dp"
+        android:layout_height="18dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginTop="13dp"
-        app:layout_constraintTop_toBottomOf="@+id/portTextView"
+        android:hint="Message"
+        android:textAlignment="center"
         app:layout_constraintLeft_toRightOf="@+id/textView3"
-        android:layout_marginLeft="16dp" />
+        app:layout_constraintTop_toBottomOf="@+id/portTextView"
+        tools:layout_editor_absoluteY="137dp" />
 
     <TextView
         android:id="@+id/ipTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_width="120dp"
+        android:layout_height="19dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:hint="Ip del server"
         android:text="server ip"
         android:textAlignment="center"
         app:layout_constraintLeft_toRightOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintRight_toLeftOf="@+id/responseTextView"
+        android:layout_marginRight="8dp" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="40dp"
         android:layout_height="19dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
         android:hint="Ip del server"
         android:text="IP"
-        android:textAlignment="center"
+        android:textAlignment="viewStart"
+        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <TextView
@@ -90,28 +124,31 @@
         android:hint="Numero Porta"
         android:inputType="number"
         android:text="server port"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toRightOf="@+id/textView2"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="14dp"
-        app:layout_constraintTop_toBottomOf="@+id/ipTextView" />
+        android:layout_marginTop="15dp"
+        app:layout_constraintTop_toBottomOf="@+id/ipTextView"
+        app:layout_constraintHorizontal_bias="0.564"
+        app:layout_constraintRight_toLeftOf="@+id/responseTextView" />
 
     <Button
-        android:id="@+id/connectButton"
+        android:id="@+id/buttonSend"
         android:layout_width="103dp"
         android:layout_height="42dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="31dp"
         android:text="SEND"
-        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintHorizontal_bias="0.481"
         app:layout_constraintLeft_toLeftOf="@+id/responseTextView"
         app:layout_constraintRight_toRightOf="@+id/responseTextView"
         app:layout_constraintTop_toBottomOf="@+id/responseTextView" />
 
     <TextView
         android:id="@+id/responseTextView"
-        android:layout_width="208dp"
-        android:layout_height="54dp"
+        android:layout_width="173dp"
+        android:layout_height="107dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
@@ -124,20 +161,34 @@
         app:layout_constraintHorizontal_bias="0.95"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        tools:layout_editor_absoluteX="195dp" />
 
     <TextView
-        android:id="@+id/wlanNameTextView"
+        android:id="@+id/textView5"
+        android:layout_width="87dp"
+        android:layout_height="36dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:text="WLAN CONNECTED"
+        android:textAlignment="textStart"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+    <TextView
+        android:id="@+id/textView4"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="41dp"
-        android:layout_marginTop="71dp"
+        android:layout_height="18dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
         android:text="WLAN SSID"
         android:textAlignment="center"
         android:textStyle="bold"
         android:visibility="visible"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
     <TextView
         android:id="@+id/wlanTextView"
@@ -146,11 +197,44 @@
         android:text="......"
         android:textAlignment="center"
         android:visibility="visible"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/wlanNameTextView"
+        app:layout_constraintLeft_toRightOf="@+id/textView5"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="@+id/wlanNameTextView"
+        app:layout_constraintRight_toLeftOf="@+id/responseTextView"
         android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="@+id/wlanNameTextView" />
+        app:layout_constraintBottom_toBottomOf="@+id/textView5"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintTop_toTopOf="@+id/textView5"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/buttonTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEST"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/buttonConnect"
+        android:layout_width="110dp"
+        android:layout_height="47dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="14dp"
+        android:drawableBottom="@android:drawable/button_onoff_indicator_off"
+        android:text="CONNECT"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <TextView
+        android:id="@+id/textViewDebug"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="60dp"
+        android:text="Debug Text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonDisconnect" />
 
 </android.support.constraint.ConstraintLayout>

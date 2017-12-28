@@ -2,13 +2,17 @@ package com.example.vittorio.socketclient;
 
 
  import android.app.Activity;
+ import android.content.BroadcastReceiver;
  import android.content.Context;
  import android.content.Intent;
+ import android.content.IntentFilter;
  import android.content.SharedPreferences;
  import android.net.ConnectivityManager;
- import android.net.NetworkInfo;
+ import android.net.wifi.WifiInfo;
+ import android.net.wifi.WifiManager;
  import android.os.AsyncTask;
  import android.os.Bundle;
+ import android.os.Vibrator;
  import android.support.v7.widget.Toolbar;
  import android.util.Log;
  import android.view.Menu;
@@ -17,22 +21,28 @@ package com.example.vittorio.socketclient;
  import android.view.View;
  import android.view.View.OnClickListener;
  import android.widget.Button;
- import android.widget.EditText;
  import android.widget.TextView;
  import android.support.v7.app.AppCompatActivity;
+ import android.widget.Toast;
+
  import java.io.IOException;
 
+ import static android.R.drawable.button_onoff_indicator_off;
+ import static android.R.drawable.button_onoff_indicator_on;
+ import static android.os.VibrationEffect.createOneShot;
 
-// per non aver prblemi con le tool bar è necessario aver come classe ereditata AppCompatActivity invece di Acvivity
+// per non aver problemi con le tool bar è necessario aver come classe ereditata AppCompatActivity invece di Acvivity
 public class MainActivity extends AppCompatActivity {
     Activity activityReference = this;
-    TextView response;
-    String ip;
-    String port;
-    String message;
-    Button buttonConnect, buttonClear;
+    TextView response,wlanSsid;
+    String ip, port, message, SSID;
+    Button buttonSend,buttonConnect, buttonDisconnect, buttonTest;
     String serverAnswer;
     String TAG = "Main_Activity";
+    String TAG1 = "WIFI";
+    String TAG2 = "vibrator";
+    String TAG3 = "THREAD";
+    String TAG4 = "LIST";
     static final int REQUEST_CODE = 1;
 
 
@@ -60,17 +70,48 @@ public class MainActivity extends AppCompatActivity {
         TextView messageTextView = (TextView) findViewById(R.id.messageTextView);
         messageTextView.setText(message);
 
-        TextView wifiNameView = (TextView) findViewById(R.id.wlanTextView);
-        buttonConnect = (Button) findViewById(R.id.connectButton);
+        SSID = loadSharedPreferences()[3];
+        TextView wifiNameView = (TextView) findViewById(R.id.SSIDTextView);
+        wifiNameView.setText(SSID);
 
-        //TODO definire un broadcast reveiver
-        // Verifica wifi attiva e scritura nel textview associato
-        String ssid= InfoWifiActive();
-        wifiNameView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        wifiNameView.setText(ssid);
+        // Associo le variabili ai widget
+        wlanSsid = (TextView) findViewById(R.id.wlanTextView);
+        buttonSend = (Button) findViewById(R.id.buttonSend);
+        buttonConnect = (Button) findViewById(R.id.buttonConnect);
+        buttonDisconnect = (Button) findViewById(R.id.buttonDisconnect);
+        buttonTest = (Button) findViewById(R.id.buttonTest);
 
 
-        buttonConnect.setOnClickListener(new OnClickListener() {
+        ///*****************************************************************
+        // Verifica se la connessione wifi è accesa, nel caso non lo fosse
+        // provvede alla sua accensione
+        WifiHandler startHandler = new WifiHandler();
+        startHandler.wifiEnableIfDisabled(getApplicationContext());
+        //******************************************************************
+        // dopo aver effettuato l'accessione si effettua una scansione degli AP in modo asincrono con async task
+        Log.d(TAG4, "Eseguo AsyncTask per la scansione degli ap");
+        new Scan().execute();
+
+
+        //TODO scrivere dei commenti
+
+        //registerReceiver(BroadcastReceiver receiver, IntentFilter filter)
+        //Register a BroadcastReceiver to be run in the main activity thr
+
+        // la costante  CONNECTIVITY_ACTION rileva se cambia la connettività del network
+        // da internet: A change in network connectivity has occurred.
+        final String CONNECTIVITY_ACTION = ConnectivityManager.CONNECTIVITY_ACTION;
+
+        // Istanzio un intent filter con il costruttore che richiede solo la String action come argomento
+        IntentFilter intentFilter = new IntentFilter(CONNECTIVITY_ACTION);
+
+        // registerReceiver è un metodo pubblico della classe astratta Context
+        this.registerReceiver(this.broadcastWifiReceiver,intentFilter);
+
+
+        // #####################   BUTTON SEND LISTENER   #######################
+
+        buttonSend.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
@@ -79,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Log.d(TAG, "Conversione della stringa in int");
                     portToUse = Integer.parseInt(port);
+                    Log.d(TAG, "Conversione della stringa in int "+portToUse);
                 }catch (NumberFormatException e) {
+                    Log.d(TAG, "Errore conversione stringa in int "+e);
                     portToUse =1234;
                 }
-
-
 
                 Log.d(TAG, "Inizializzo start");
                 Message start = new Message(ip,portToUse,message);
@@ -93,12 +134,155 @@ public class MainActivity extends AppCompatActivity {
                 start.execute(message);
             }
         });
+        // ########################################################################################
+
+        // associo al button l'icona grigia di default di android di indiccatore off
+        buttonConnect.setCompoundDrawablesWithIntrinsicBounds(0,0,0,button_onoff_indicator_off);
+
+        // #####################   BUTTON CONNECT LISTENER   #######################
+
+
+        buttonConnect.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                //ISTANZIO L'oggetto handler di tipo WifiHandler tramite il costruttore senza argomenti
+                WifiHandler handler = new WifiHandler(SSID);
+                // verifico l'SSID delle wifi connessa, se c'è una connessione
+                // questa si potrebbe ricavare anche dal broadcast receiver
+                String wifiActive = handler.InfoWifiActive(getApplicationContext());
+                Log.d(TAG1,"wifiActive.....= "+wifiActive);
+
+                // ciclo if se il valore dell'SSID è quelo configurato nelle propietà e legato al target per il socket
+                // si può collegare il socket, altrimenti è necessario connettersi alla wifi specifica per il socket
+
+                // il punto ! significa not equal to
+                if (!wifiActive.equals(SSID)) {
+                    handler.wifiManager(getApplicationContext()).disconnect();
+                    Log.d(TAG1, "Wifi Disconnected");
+
+                    int netID = handler.specificNetwork(getApplicationContext());
+
+                    handler.enableNetwork(getApplicationContext(), netID);
+                    Log.d(TAG1, "Enabled Netwwork " + netID);
+
+                    handler.wifiManager(getApplicationContext()).reconnect();
+                    Log.d(TAG1, "Reconnected ");
+                }
+
+            }
+        });
+        // ########################################################################################
+
+
+
+        // #####################   BUTTON DISCONNECT AND DISABLE LISTENER   #######################
+
+
+        buttonDisconnect.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+
+                WifiHandler handler = new WifiHandler(SSID);
+
+                handler.wifiManager(getApplicationContext()).disconnect();
+
+                int netID =handler.specificNetwork(getApplicationContext());
+
+                handler.wifiManager(getApplicationContext()).disableNetwork(netID);
+                Log.d(TAG1,"Disabled Network "+netID);
+
+                handler.wifiManager(getApplicationContext()).reconnect();
+            }
+        });
+        // ########################################################################################
+
+
+
+        // #####################   BUTTON TEST LISTENER   #######################
+        buttonTest.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+
+                new Scan().execute();
+    }
+});
+        // ########################################################################################
+
     }
 
-    // questo metodo viene usato quanto si passa dalla activity2 a questa activity
+
+    // ############### METODI DEL  BROADCAST RECEIVER ##############################################
+
+    private BroadcastReceiver broadcastWifiReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            // Azione da eseguire quando il broadcast riceve l'intent in ingresso
+            WifiManager wifiManager = (WifiManager) context.getSystemService(context.WIFI_SERVICE);
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            String ssid = wifiInfo.getSSID();
+            String ssidNoQuotes = wifiInfo.getSSID().replace('"',' ');
+            wlanSsid.setText(ssidNoQuotes);
+            Log.d(TAG1,"ACTIONS NEL BROADCAST: "+ssid+"  SSID="+SSID);
+            // associazione del tasto verde al pulsante connect se il valore della SSID
+            // è uguale a quello impostato nelle preferenze
+            // il pulsante connect ha il falg verde se  il cell è connesso alla wifi scelta
+
+            if (ssid.equals("\""+SSID+"\"")){
+                Log.d(TAG1,"CICLO IF NEL BROADCAST: "+ssid);
+                buttonConnect .setCompoundDrawablesWithIntrinsicBounds(0,0,0,button_onoff_indicator_on);
+
+                //**************************************
+                // ATTIVA LA VIBRAZIONE AL CAMBIO RETE
+               // Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                //if (vibrator.hasVibrator()){
+                //    vibrator.vibrate(100);
+                //}
+                // ************************************
+            }else{
+                Log.d(TAG1,"CICLO ELSE NEL BROADCAST: "+ssid);
+                buttonConnect .setCompoundDrawablesWithIntrinsicBounds(0,0,0,button_onoff_indicator_off);
+            }
+        }
+    };
+
+    // Metodo per interrompere il Broadcast e la connessione alla wifi  quando l'app è in pausa
+    protected void onPause(){
+        // sospende il broadcast
+        unregisterReceiver(broadcastWifiReceiver);
+        super.onPause();
+
+        // disconnette dalla WIFI specifica se l'app viene messa in pausa
+
+        WifiHandler handler = new WifiHandler(SSID);
+        handler.wifiManager(getApplicationContext()).disconnect();
+        int netID =handler.specificNetwork(getApplicationContext());
+        handler.wifiManager(getApplicationContext()).disableNetwork(netID);
+        Log.d(TAG1,"Disabled Network ON PAUSE "+netID);
+        handler.wifiManager(getApplicationContext()).reconnect();
+    }
+
+    // Metodo per rirpistinare il Broadcast quando l'app viene ripristinata
+    protected  void onResume(){
+        // riattiva il broadcast
+        registerReceiver(broadcastWifiReceiver,new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        super.onResume();
+
+        // Invia un messaggio Toast all'utene comunicando che sisogna effettuare la connessione
+        // per poter operare sulla wi-fi specifica
+
+        Toast.makeText(getApplicationContext(), "CONNECT TO SEND MESSAGE", Toast.LENGTH_SHORT).show();
+
+    }
+    // #############################################################################################
+
+    // Questo metodo viene usato quando si passa dalla activity2 alla main activity per aggiornare quest'ultima
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-
         activityReference.recreate();
     }
 
@@ -127,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // Metodo per effettuare delle scelte e quind azioni al click delle voci del menu
+    // Metodo per effettuare delle scelte e quindi azioni al click delle voci del menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -176,8 +360,8 @@ public class MainActivity extends AppCompatActivity {
         // metodo di Async Task
         // è il primo che viene eseguito all' avvio dell async task
         protected void onPreExecute() {
-            final Button connect = (Button) findViewById(R.id.connectButton);
-            connect.setEnabled(false);
+            final Button send = (Button) findViewById(R.id.buttonSend);
+            send.setEnabled(false);
 
             final TextView View = (TextView) findViewById(R.id.responseTextView);
             View.setText(null);
@@ -213,34 +397,61 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String answer) {
             final TextView View = (TextView) findViewById(R.id.responseTextView);
             View.setText(answer);
-            final Button connect = (Button) findViewById(R.id.connectButton);
-            connect.setEnabled(true);
+            final Button send = (Button) findViewById(R.id.buttonSend);
+            send.setEnabled(true);
         }
     }
 
-    /**
-     * Created by Vittorio on 11/09/2017.
-     * Metodo per la verifica della connessione WIFI o Internet
-     */
-    private String InfoWifiActive() throws ArrayIndexOutOfBoundsException, NullPointerException {
-        String result = null;
-        try {
-            ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            boolean checkInternet = connManager.getActiveNetworkInfo().isAvailable();
+/* Classe Scan con metodo async task per la scsnaione degli AP
+Questa classe viene istanziata durante la inizializzazione della app*/
+    private class Scan extends AsyncTask<String, Void, String[]> {
 
-            if (checkInternet) {
-                NetworkInfo mWifi = connManager.getActiveNetworkInfo();
-                String info = mWifi.toString();
-                String[] arrayInfo = info.split("\"", -1);//per Ottenere il nome della rete
-                result = arrayInfo[1];
-                Log.d(TAG, "WLAN= "+result);
+        // il costruttore è sotinteso ed è automaticamente generato
+
+        // metodo di Async Task
+        protected String [] doInBackground(String... commandList) {
+            String  list [] = null;
+            Log.d(TAG, "Metodo doInBackground-- per la scansione della rete");
+
+            try {
+                WifiHandler wifiHandler = new WifiHandler();
+                list = wifiHandler.scanList(getApplicationContext());
+                Log.d(TAG4, "Lista scansione: "+list[0]);
+            } catch (NullPointerException e) {
+                list = null;
             }
-        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            e.printStackTrace();
-            result = "NO CONNECTION";
+            return list;
         }
-        return result;
+
+
+        // metodo di Async Task
+        // Ha come argomento l'output del do In Background
+        protected void onPostExecute(String[] list) {
+            final TextView View = (TextView) findViewById(R.id.textViewDebug);
+            // la lista output di do in back ground è una lista di lunghezza non definita
+            // verifico la lunghezza della lista
+            String allList = "";
+            String tempList [];
+            int lenghtList= list.length;
+            for (int i = 0; i < lenghtList; i++) {
+                allList=allList.concat(list[i]+'\n');
+
+                //Log.d(TAG1, "wifis[i] " + wifis[i]);
+            }
+            View.setText(allList);
+        }
     }
+
+/*    class ThreadRun implements Runnable {
+        long minPrime;
+        ThreadRun(long minPrime) {
+            this.minPrime = minPrime;
+        }
+
+        public void run() {
+
+        }
+    }*/
 
 }
 

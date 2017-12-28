@@ -26,7 +26,7 @@ public class Activity2Settings extends AppCompatActivity {
         // assegno alla variabile activityreference l'attivita' attuale
         activityReference=this;
 
-//Assegnare alla variabile istanziata di tipo ListView l'id di riferimento
+        //Assegnare alla variabile istanziata di tipo ListView l'id di riferimento
         listView = (ListView) findViewById(R.id.listView1);
         //carico il valori riportati nella shared preferences
 

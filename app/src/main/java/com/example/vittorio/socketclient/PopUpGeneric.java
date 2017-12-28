@@ -4,6 +4,9 @@ package com.example.vittorio.socketclient;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,10 +44,13 @@ public class PopUpGeneric extends PopupWindow{
 
         ctx = context;
         popupView = LayoutInflater.from(context).inflate(resourceLayout, null);
+
+        // recupero il colore dalle risorse xml colori
+        int colorPopUp = ContextCompat.getColor(context,R.color.Gray);
+        // imposto il colore
+        popupView.setBackgroundColor(colorPopUp);
         setContentView(popupView);
 
-
-        popupView.setBackgroundColor(1222222222);
 
         btnConfirm = (Button)popupView.findViewById(resourceOkButton);
         btnCancel = (Button)popupView.findViewById(resourceCancelButton);
