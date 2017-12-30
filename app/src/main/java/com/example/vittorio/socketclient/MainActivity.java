@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // Metodo per interrompere il Broadcast e la connessione alla wifi  quando l'app è in pausa
-    protected void onPause(){
+  /*  protected void onPause(){
         // sospende il broadcast
         unregisterReceiver(broadcastWifiReceiver);
         super.onPause();
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(getApplicationContext(), "CONNECT TO SEND MESSAGE", Toast.LENGTH_SHORT).show();
 
-    }
+    }*/
     // #############################################################################################
 
     // Questo metodo viene usato quando si passa dalla activity2 alla main activity per aggiornare quest'ultima
@@ -372,7 +372,8 @@ public class MainActivity extends AppCompatActivity {
             String answerFromServer=".....";
 
             Log.d(TAG, "Metodo doInBackground-- Inizializzo socket Message");
-            SocketMessage socketMessage= new SocketMessage (ipAddress,serverPort,commandList[0]);
+            //SocketMessage socketMessage= new SocketMessage (ipAddress,serverPort,commandList[0]);
+            SocketMessageBuffered socketMessage= new SocketMessageBuffered (ipAddress,serverPort,commandList[0]);
             //answerFromServer =" Problemi di comunicazione con il socket";
 
             try {

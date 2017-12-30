@@ -2,18 +2,15 @@ package com.example.vittorio.socketclient;
 
 import android.util.Log;
 
-import java.io.BufferedInputStream;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketImpl;
 
 
 /**
@@ -35,25 +32,33 @@ public class SocketMessage {
         this.ip = ip;
         this.port = port;
         this.message = message;
-        int timeOut= 5000;
     }
 
     public String send() throws IOException{
 
-            // Crea il socket e connette all'indirizzo dato e alla porta
-            Log.d(TAG, "Connessione al socket");
             InetSocketAddress inetSocketAddress = new InetSocketAddress(ip,port);
+            // crea il socket
             Socket socket = new Socket();
-            socket.connect(inetSocketAddress,TIME_OUT);
             socket.setTcpNoDelay(true);
+            socket.getKeepAlive();
             socket.setReceiveBufferSize(1024);
-            socket.setReuseAddress(true);
-            Log.d(TAG, "New Socket just created on port: "+port);
+            //socket.setReuseAddress(true);
 
-            if (socket.isConnected()) {
+            // connette il socket
+            long now = System.currentTimeMillis();
+            Log.d(TAG, "Connessione al socket...."+now);
+
+            socket.connect(inetSocketAddress,TIME_OUT);
+
+            Long nowNow =System.currentTimeMillis();
+            Log.d(TAG, "Socket connesso -- tempo di connessione:"+(nowNow-now));
+
+            //if (socket.isConnected()) {
 
 
                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+
+
                 PrintWriter outToServer = new PrintWriter(outputStreamWriter);
 
                 Log.d(TAG, "Print writer just done");
@@ -79,12 +84,11 @@ public class SocketMessage {
 
                 bufferedReader.close();
                 outToServer.close();
-
                 return result;
-            } else{
-                result="Nessuna risposta dal server";
-            }
-            return result;
+            //} else{
+            //    result="Nessuna risposta dal server";
+            //}
+            //return result;
     }
 
     // Metodo per convertire un oggetto BufferedReader  in una stringa
